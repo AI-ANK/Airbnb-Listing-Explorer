@@ -100,29 +100,6 @@ def get_text_data(data):
     Value Rating: {data['Value Rating']}
     """
 
-def create_text_and_embeddings():
-    # Write text data to 'textdata' folder and creating individual files
-    # if write_dir.exists():
-    #     print(f"Directory exists: {write_dir}")
-    #     [f.unlink() for f in write_dir.iterdir()]
-    # else:
-    #     print(f"Creating directory: {write_dir}")
-    #     write_dir.mkdir(exist_ok=True, parents=True)
-    df_file_path = 'Airbnb Berlin 1000.csv'  # Path to the csv file
-    if os.path.exists(df_file_path):
-        df = pd.read_csv(df_file_path)
-        df["text"] = df.apply(get_text_data, axis=1)
-    for index, row in df.iterrows():
-        if "text" in row:
-            file_path = write_dir / f"AirbnbProperty_{index}.txt"
-            with file_path.open("w") as f:
-                f.write(str(row["text"]))
-        else:
-            print(f"No 'text' column found at index {index}")
-
-    print(f"Files created in {write_dir}")
-# create_text_and_embeddings()   #execute only once in the beginning
-
 @st.cache_data
 def load_data():
     # if write_dir.exists():
@@ -159,9 +136,6 @@ for doc in documents:
     # print(doc.metadata)
 # st.write("HERE")
 # st.write(documents)
-
-# index = VectorStoreIndex.from_documents(documents2, vector_store=vector_store, service_context=service_context, storage_context=storage_context, show_progress=True)
-
 
 #Create vector indexes and store in Qdrant. To be run only once in the beginning
 # index = VectorStoreIndex.from_documents(documents, vector_store=vector_store, service_context=service_context, storage_context=storage_context, show_progress=True)
@@ -312,95 +286,3 @@ if st.button("Submit Query"):
         llm_response = llm.complete(prompt_template)
         response_parts = llm_response.text.split('```')
         st.markdown(response_parts[0])
-
-    # elif selection == 'Advanced: Qdrant Similarity Search + Llamaindex Text-to-SQL':
-    #     #Part 2, Semantic Search + Text-to-SQL
-    #     with st.status("Advanced Method: Generating response based on Qdrant Similarity Search + Llamaindex Text-to-SQL", expanded = True):
-    #         df2 = df.drop('text', axis=1)
-    #         # st.write(df2)
-    #         #Create a SQLite database and engine
-    #         engine = create_engine("sqlite:///Airbnb_Dataset.db?mode=ro", connect_args={"uri": True})
-    #         sql_database = SQLDatabase(engine)
-    #         #Convert the DataFrame to a SQL table within the SQLite database
-    #         df2.to_sql('airbnb_data_sql', con=engine, if_exists='replace', index=False)
-
-    #         #Build sql query engine
-    #         sql_query_engine = NLSQLTableQueryEngine(
-    #             sql_database=sql_database,
-    #             llm = llm,
-    #             service_context=service_context
-    #         )
-
-    #         vector_store_info = VectorStoreInfo(
-    #             content_info="Airbnb data details for Berlin",
-    #             metadata_info = [
-    #                 MetadataInfo(name="review_date", type="date", description="The date of the review"),
-    #                 MetadataInfo(name="Reviewer Name", type="str", description="The name of the reviewer"),
-    #                 MetadataInfo(name="Comments", type="str", description="The reviewer's comments"),
-    #                 MetadataInfo(name="Listing URL", type="str", description="The URL of the listing"),
-    #                 MetadataInfo(name="Listing Name", type="str", description="The name of the listing"),
-    #                 MetadataInfo(name="Host URL", type="str", description="The URL of the host"),
-    #                 MetadataInfo(name="Host Name", type="str", description="The name of the host"),
-    #                 MetadataInfo(name="Host Since", type="date", description="The date the host joined Airbnb"),
-    #                 MetadataInfo(name="Host Response Time", type="str", description="The host's response time"),
-    #                 MetadataInfo(name="Host Response Rate", type="str", description="The host's response rate"),
-    #                 MetadataInfo(name="Is Superhost", type="bool", description="Whether or not the host is a Superhost"),
-    #                 MetadataInfo(name="neighbourhood", type="str", description="The neighbourhood of the listing"),
-    #                 MetadataInfo(name="Neighborhood Group", type="str", description="The neighbourhood group of the listing"),
-    #                 MetadataInfo(name="City", type="str", description="The city of the listing"),
-    #                 MetadataInfo(name="Postal Code", type="str", description="The postal code of the listing"),
-    #                 MetadataInfo(name="Country Code", type="str", description="The country code of the listing"),
-    #                 MetadataInfo(name="Latitude", type="float", description="The latitude of the listing"),
-    #                 MetadataInfo(name="Longitude", type="float", description="The longitude of the listing"),
-    #                 MetadataInfo(name="Is Exact Location", type="bool", description="Whether or not the location is exact"),
-    #                 MetadataInfo(name="Property Type", type="str", description="The type of property"),
-    #                 MetadataInfo(name="Room Type", type="str", description="The type of room"),
-    #                 MetadataInfo(name="Accomodates", type="int", description="The number of people the property can accommodate"),
-    #                 MetadataInfo(name="Bathrooms", type="float", description="The number of bathrooms"),
-    #                 MetadataInfo(name="Bedrooms", type="int", description="The number of bedrooms"),
-    #                 MetadataInfo(name="Beds", type="int", description="The number of beds"),
-    #                 MetadataInfo(name="Square Feet", type="float", description="The square footage of the property"),
-    #                 MetadataInfo(name="Price", type="float", description="The price of the listing"),
-    #                 MetadataInfo(name="Guests Included", type="int", description="The number of guests included in the price"),
-    #                 MetadataInfo(name="Min Nights", type="int", description="The minimum number of nights required to stay"),
-    #                 MetadataInfo(name="Reviews", type="int", description="The number of reviews the listing has"),
-    #                 MetadataInfo(name="First Review", type="date", description="The date of the first review"),
-    #                 MetadataInfo(name="Last Review", type="date", description="The date of the last review"),
-    #                 MetadataInfo(name="Overall Rating", type="float", description="The listing's overall rating"),
-    #                 MetadataInfo(name="Accuracy Rating", type="float", description="The listing's accuracy rating"),
-    #                 MetadataInfo(name="Cleanliness Rating", type="float", description="The listing's cleanliness rating"),
-    #                 MetadataInfo(name="Checkin Rating", type="float", description="The listing's checkin rating"),
-    #                 MetadataInfo(name="Communication Rating", type="float", description="The listing's communication rating"),
-    #                 MetadataInfo(name="Location Rating", type="float", description="The listing's location rating"),
-    #                 MetadataInfo(name="Value Rating", type="float", description="The listing's value rating"),
-    #             ],
-    #         )
-    #         vector_auto_retriever = VectorIndexAutoRetriever(
-    #             index, vector_store_info=vector_store_info,
-    #             service_context=service_context
-    #         )
-
-    #         retriever_query_engine = RetrieverQueryEngine.from_args(
-    #             vector_auto_retriever, service_context=service_context
-    #         )
-
-    #         sql_tool = QueryEngineTool.from_defaults(
-    #             query_engine=sql_query_engine,
-    #             description=(
-    #                 "Useful for translating a natural language query into a SQL query over"
-    #                 " a table, containing data of Airbnb listing in Berlin."
-                
-    #             ),
-    #         )
-    #         vector_tool = QueryEngineTool.from_defaults(
-    #             query_engine=retriever_query_engine,
-    #             description=(
-    #                 f"Useful for answering questions about different listings in Airbnb Berlin. Use this to refine your answers"
-    #             ),
-    #         )
-
-    #         query_engine = SQLAutoVectorQueryEngine(
-    #             sql_tool, vector_tool, service_context=service_context
-    #         )
-    #         response = query_engine.query(f"{user_query}+. Provide a detailed response")
-    #         st.markdown(response.response)
